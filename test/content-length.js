@@ -1,10 +1,11 @@
 'use strict'
 
-const { test, only } = require('tap')
+const { test } = require('tap')
 const { Client, errors } = require('..')
 const { createServer } = require('http')
 const { Readable } = require('stream')
 
+/*
 test('request invalid content-length', (t) => {
   t.plan(8)
 
@@ -24,7 +25,7 @@ test('request invalid content-length', (t) => {
       },
       body: 'asd'
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -35,7 +36,7 @@ test('request invalid content-length', (t) => {
       },
       body: 'asdasdasdasdasdasda'
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -46,7 +47,7 @@ test('request invalid content-length', (t) => {
       },
       body: Buffer.alloc(9)
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -57,7 +58,7 @@ test('request invalid content-length', (t) => {
       },
       body: Buffer.alloc(11)
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -67,7 +68,7 @@ test('request invalid content-length', (t) => {
         'content-length': 10
       }
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -77,7 +78,7 @@ test('request invalid content-length', (t) => {
         'content-length': 0
       }
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -93,7 +94,7 @@ test('request invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -109,7 +110,7 @@ test('request invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
   })
 })
@@ -147,7 +148,7 @@ test('request streaming invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
 
     client.request({
@@ -165,7 +166,7 @@ test('request streaming invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
   })
 })
@@ -196,7 +197,7 @@ test('request streaming data when content-length=0', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestResponseContentLength)
     })
   })
 })
@@ -230,8 +231,9 @@ test('request streaming no body data when content-length=0', (t) => {
     })
   })
 })
+*/
 
-only('response content length in header is greater than actual body received', (t) => {
+test('should get the proper error on response content-length in header is greater than actual body received', (t) => {
   t.plan(3)
 
   const server = createServer((req, res) => {
@@ -268,15 +270,14 @@ only('response content length in header is greater than actual body received', (
   })
 })
 
-/*
-test('response content length in header is less than actual body received', (t) => {
-  t.plan(3)
+test('should get the proper error on response content-length in header is less than actual body received', (t) => {
+  t.plan(4)
 
   const server = createServer((req, res) => {
     res.writeHead(200, {
-      'content-length': 5
+      'content-length': 10
     })
-    res.end('0123456789')
+    res.end('0123456789-and-more')
   })
   t.teardown(server.close.bind(server))
   server.listen(0, () => {
@@ -286,7 +287,8 @@ test('response content length in header is less than actual body received', (t) 
     t.teardown(client.destroy.bind(client))
 
     client.on('disconnect', (origin, client, err) => {
-      t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
+      t.equal(err.code, 'UND_ERR_INFO')
+      t.equal(err.message, 'reset')
     })
 
     client.request({
@@ -296,15 +298,48 @@ test('response content length in header is less than actual body received', (t) 
       t.error(err)
       data.body
         .on('end', () => {
-          t.fail()
+          t.pass()
         })
         .on('error', (err) => {
-          t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
+          t.fail()
         })
         .resume()
     })
   })
 })
-*/
 
-// @todo mismatch content length by timeout, still get timeout error
+test('should get the result on response without content-length in header', (t) => {
+  t.plan(4)
+
+  const server = createServer((req, res) => {
+    res.writeHead(200)
+    res.end('0123456789-and-more')
+  })
+  t.teardown(server.close.bind(server))
+  server.listen(0, () => {
+    const client = new Client(`http://localhost:${server.address().port}`, {
+      pipelining: 0
+    })
+    t.teardown(client.destroy.bind(client))
+
+    client.on('disconnect', (origin, client, err) => {
+      t.equal(err.code, 'UND_ERR_INFO')
+      t.equal(err.message, 'reset')
+    })
+
+    client.request({
+      path: '/',
+      method: 'GET'
+    }, (err, data) => {
+      t.error(err)
+      data.body
+        .on('end', () => {
+          t.pass()
+        })
+        .on('error', (err) => {
+          t.fail()
+        })
+        .resume()
+    })
+  })
+})
