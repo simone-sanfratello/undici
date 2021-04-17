@@ -24,7 +24,7 @@ test('request invalid content-length', (t) => {
       },
       body: 'asd'
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -35,7 +35,7 @@ test('request invalid content-length', (t) => {
       },
       body: 'asdasdasdasdasdasda'
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -46,7 +46,7 @@ test('request invalid content-length', (t) => {
       },
       body: Buffer.alloc(9)
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -57,7 +57,7 @@ test('request invalid content-length', (t) => {
       },
       body: Buffer.alloc(11)
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -67,7 +67,7 @@ test('request invalid content-length', (t) => {
         'content-length': 10
       }
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -77,7 +77,7 @@ test('request invalid content-length', (t) => {
         'content-length': 0
       }
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -93,7 +93,7 @@ test('request invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -109,7 +109,7 @@ test('request invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
   })
 })
@@ -147,7 +147,7 @@ test('request streaming invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
 
     client.request({
@@ -165,7 +165,7 @@ test('request streaming invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
   })
 })
@@ -196,7 +196,7 @@ test('request streaming data when content-length=0', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.ContentLengthMismatchError)
+      t.ok(err instanceof errors.RequestContentLengthMismatchError)
     })
   })
 })
@@ -231,7 +231,7 @@ test('request streaming no body data when content-length=0', (t) => {
   })
 })
 
-test('response invalid content length with close', (t) => {
+test('response content length in header is greater than actual body received', (t) => {
   t.plan(3)
 
   const server = createServer((req, res) => {
@@ -248,7 +248,7 @@ test('response invalid content length with close', (t) => {
     t.teardown(client.destroy.bind(client))
 
     client.on('disconnect', (origin, client, err) => {
-      t.equal(err.code, 'UND_ERR_SOCKET')
+      t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
     })
 
     client.request({
@@ -261,9 +261,48 @@ test('response invalid content length with close', (t) => {
           t.fail()
         })
         .on('error', (err) => {
-          t.equal(err.code, 'UND_ERR_SOCKET')
+          t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
         })
         .resume()
     })
   })
 })
+
+test('response content length in header is less than actual body received', (t) => {
+  t.plan(3)
+
+  const server = createServer((req, res) => {
+    res.writeHead(200, {
+      'content-length': 5
+    })
+    res.end('0123456789')
+  })
+  t.teardown(server.close.bind(server))
+  server.listen(0, () => {
+    const client = new Client(`http://localhost:${server.address().port}`, {
+      pipelining: 0
+    })
+    t.teardown(client.destroy.bind(client))
+
+    client.on('disconnect', (origin, client, err) => {
+      t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
+    })
+
+    client.request({
+      path: '/',
+      method: 'GET'
+    }, (err, data) => {
+      t.error(err)
+      data.body
+        .on('end', () => {
+          t.fail()
+        })
+        .on('error', (err) => {
+          t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
+        })
+        .resume()
+    })
+  })
+})
+
+// @todo mismatch content length by timeout, still get timeout error
