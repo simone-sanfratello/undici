@@ -45,10 +45,16 @@ declare namespace Errors {
     code: 'UND_ERR_INFO';
   }
 
-  /** Body does not match content-length header. */
+  /** Request body does not match content-length header. */
+  export class RequestContentLength extends UndiciError {
+    name: 'ResponseContentLength';
+    code: 'UND_ERR_REQUEST_CONTENT_LENGTH_MISMATCH';
+  }
+
+  /** Response body does not match content-length header. */
   export class ResponseContentLength extends UndiciError {
     name: 'ResponseContentLength';
-    code: 'UND_ERR_CONTENT_LENGTH_MISMATCH';
+    code: 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH';
   }
 
   /** Trying to use a destroyed client. */

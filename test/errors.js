@@ -21,7 +21,7 @@ const scenarios = [
   createScenario(errors.InvalidReturnValueError, 'Invalid Return Value Error', 'InvalidReturnValueError', 'UND_ERR_INVALID_RETURN_VALUE'),
   createScenario(errors.RequestAbortedError, 'Request aborted', 'RequestAbortedError', 'UND_ERR_ABORTED'),
   createScenario(errors.InformationalError, 'Request information', 'InformationalError', 'UND_ERR_INFO'),
-  createScenario(errors.RequestResponseContentLength, 'Request body length does not match content-length header', 'RequestResponseContentLength', 'UND_ERR_REQUEST_CONTENT_LENGTH_MISMATCH'),
+  createScenario(errors.RequestContentLength, 'Request body length does not match content-length header', 'RequestContentLength', 'UND_ERR_REQUEST_CONTENT_LENGTH_MISMATCH'),
   createScenario(errors.ResponseContentLength, 'Response body length does not match content-length header', 'ResponseContentLength', 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH'),
   createScenario(errors.TrailerMismatchError, 'Trailers does not match trailer header', 'TrailerMismatchError', 'UND_ERR_TRAILER_MISMATCH'),
   createScenario(errors.ClientDestroyedError, 'The client is destroyed', 'ClientDestroyedError', 'UND_ERR_DESTROYED'),

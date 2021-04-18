@@ -25,7 +25,7 @@ test('request invalid content-length', (t) => {
       },
       body: 'asd'
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -36,7 +36,7 @@ test('request invalid content-length', (t) => {
       },
       body: 'asdasdasdasdasdasda'
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -47,7 +47,7 @@ test('request invalid content-length', (t) => {
       },
       body: Buffer.alloc(9)
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -58,7 +58,7 @@ test('request invalid content-length', (t) => {
       },
       body: Buffer.alloc(11)
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -68,7 +68,7 @@ test('request invalid content-length', (t) => {
         'content-length': 10
       }
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -78,7 +78,7 @@ test('request invalid content-length', (t) => {
         'content-length': 0
       }
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -94,7 +94,7 @@ test('request invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -110,7 +110,7 @@ test('request invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
   })
 })
@@ -148,7 +148,7 @@ test('request streaming invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
 
     client.request({
@@ -166,7 +166,7 @@ test('request streaming invalid content-length', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
   })
 })
@@ -197,7 +197,7 @@ test('request streaming data when content-length=0', (t) => {
         }
       })
     }, (err, data) => {
-      t.ok(err instanceof errors.RequestResponseContentLength)
+      t.ok(err instanceof errors.RequestContentLength)
     })
   })
 })
@@ -234,7 +234,7 @@ test('request streaming no body data when content-length=0', (t) => {
 */
 
 test('should get the proper error on response content-length in header is greater than actual body received', (t) => {
-  t.plan(3)
+  t.plan(5)
 
   const server = createServer((req, res) => {
     res.writeHead(200, {
@@ -251,6 +251,7 @@ test('should get the proper error on response content-length in header is greate
 
     client.on('disconnect', (origin, client, err) => {
       t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
+      t.equal(err.message, 'other side closed')
     })
 
     client.request({
@@ -264,6 +265,7 @@ test('should get the proper error on response content-length in header is greate
         })
         .on('error', (err) => {
           t.equal(err.code, 'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH')
+          t.equal(err.message, 'other side closed')
         })
         .resume()
     })

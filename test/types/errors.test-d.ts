@@ -33,11 +33,15 @@ expectAssignable<errors.InformationalError>(new errors.InformationalError())
 expectAssignable<'InformationalError'>(new errors.InformationalError().name)
 expectAssignable<'UND_ERR_INFO'>(new errors.InformationalError().code)
 
-// @todo
 expectAssignable<errors.UndiciError>(new errors.ResponseContentLength())
 expectAssignable<errors.ResponseContentLength>(new errors.ResponseContentLength())
 expectAssignable<'ResponseContentLength'>(new errors.ResponseContentLength().name)
-expectAssignable<'UND_ERR_CONTENT_LENGTH_MISMATCH'>(new errors.ResponseContentLength().code)
+expectAssignable<'UND_ERR_REQUEST_CONTENT_LENGTH_MISMATCH'>(new errors.RequestContentLength().code)
+
+expectAssignable<errors.UndiciError>(new errors.ResponseContentLength())
+expectAssignable<errors.ResponseContentLength>(new errors.ResponseContentLength())
+expectAssignable<'ResponseContentLength'>(new errors.ResponseContentLength().name)
+expectAssignable<'UND_ERR_RESPONSE_CONTENT_LENGTH_MISMATCH'>(new errors.ResponseContentLength().code)
 
 expectAssignable<errors.UndiciError>(new errors.ClientDestroyedError())
 expectAssignable<errors.ClientDestroyedError>(new errors.ClientDestroyedError())
