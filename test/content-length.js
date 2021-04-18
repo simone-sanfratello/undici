@@ -5,7 +5,6 @@ const { Client, errors } = require('..')
 const { createServer } = require('http')
 const { Readable } = require('stream')
 
-/*
 test('request invalid content-length', (t) => {
   t.plan(8)
 
@@ -231,7 +230,6 @@ test('request streaming no body data when content-length=0', (t) => {
     })
   })
 })
-*/
 
 test('should get the proper error on response content-length in header is greater than actual body received', (t) => {
   t.plan(5)
@@ -302,7 +300,7 @@ test('should get the proper error on response content-length in header is less t
         .on('end', () => {
           t.pass()
         })
-        .on('error', (err) => {
+        .on('error', () => {
           t.fail()
         })
         .resume()
@@ -338,7 +336,7 @@ test('should get the result on response without content-length in header', (t) =
         .on('end', () => {
           t.pass()
         })
-        .on('error', (err) => {
+        .on('error', () => {
           t.fail()
         })
         .resume()
